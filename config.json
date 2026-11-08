@@ -1,0 +1,32 @@
+{
+  "assets": [
+    "gold",
+    "silver",
+    "wti",
+    "brent",
+    "copper",
+    "natgas",
+    "platinum",
+    "palladium"
+  ],
+  "direction": "up",
+  "entry_after_seconds": 300,
+  "trend_seconds": 30,
+  "min_move_cents": 3.0,
+  "poll_seconds": 2.0,
+  "max_spread_cents": 6.0,
+  "min_price_cents": 30.0,
+  "max_price_cents": 70.0,
+  "stop_entering_seconds_left": 60,
+  "max_contracts": 10,
+  "risk_per_trade_pct": 0.10,
+  "risk_per_trade_abs": 2.0,
+  "max_concurrent": 2,
+  "daily_loss_pct": 0.20,
+  "daily_profit_pct": 0.50,
+  "max_consecutive_losses": 3,
+  "cooldown_after_loss_seconds": 180,
+  "cooldown_after_streak_seconds": 1800,
+  "asset_cooldown_seconds": 300,
+  "starting_balance": 100.0
+}
