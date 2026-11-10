@@ -6,6 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
+#shell extentsions
+# Local development scripts
+uploadtogit.sh
+*.sh
+!src/**/*.sh  # (Optional: if you DO have shell scripts inside src/ that you want to commit)
+
+
 # Distribution / packaging
 .Python
 build/
