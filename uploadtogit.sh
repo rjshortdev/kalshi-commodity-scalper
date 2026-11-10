@@ -4,10 +4,9 @@ set -euo pipefail
 # -----------------------------------------------------------------------------
 # CONFIGURATION
 # -----------------------------------------------------------------------------
-# Replace these with your actual GitHub details if not already set globally
-GIT_USER_NAME="${GIT_USER_NAME:-rjshortdev}"       # Default to your username
+GIT_USER_NAME="${GIT_USER_NAME:-rjshortdev}"
 GIT_USER_EMAIL="${GIT_USER_EMAIL:-your-email@example.com}" # CHANGE THIS TO YOUR EMAIL
-COMMIT_MSG="${1:-"Update code and docs"}"          # Pass message as arg 1, or default
+DEFAULT_MSG="Update code and docs"
 
 echo "🚀 Starting deployment for kalshi-commodity-scalper..."
 
@@ -25,45 +24,58 @@ if [ -z "$(git config --get user.email)" ]; then
 fi
 
 # -----------------------------------------------------------------------------
-# 2. Stage Changes
+# 2. Stage Changes & Show Diff Summary
 # -----------------------------------------------------------------------------
 echo "📦 Staging changes..."
 git add .
 
-# -----------------------------------------------------------------------------
-# 3. Commit (Only if there are staged changes)
-# -----------------------------------------------------------------------------
-if ! git diff --cached --quiet; then
-    echo "💾 Committing: '$COMMIT_MSG'"
-    git commit -m "$COMMIT_MSG"
-else
-    echo "ℹ️ No changes detected. Skipping commit."
+# Check if there are actually staged changes
+if git diff --cached --quiet; then
+    echo "ℹ️ No changes detected. Nothing to commit."
+    exit 0
+fi
+
+# --- SHOW WHAT CHANGED ---
+echo ""
+echo "🔍 Here is what will be committed:"
+echo "--------------------------------------------------"
+git diff --cached --stat
+echo "--------------------------------------------------"
+echo ""
+
+# Ask for confirmation
+read -rp "✅ Proceed with these changes? (y/n): " CONFIRM
+if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+    echo "❌ Commit cancelled by user."
+    git reset HEAD . > /dev/null 2>&1 || true
+    exit 1
 fi
 
 # -----------------------------------------------------------------------------
-# 4. Push to Remote
+# 3. Get Commit Message
+# -----------------------------------------------------------------------------
+COMMIT_MSG=""
+while [ -z "$COMMIT_MSG" ]; do
+    read -rp "💬 Enter commit message (or press Enter for '$DEFAULT_MSG'): " COMMIT_MSG
+    if [ -z "$COMMIT_MSG" ]; then
+        COMMIT_MSG="$DEFAULT_MSG"
+    fi
+done
+
+# -----------------------------------------------------------------------------
+# 4. Commit
+# -----------------------------------------------------------------------------
+echo "💾 Committing: '$COMMIT_MSG'"
+git commit -m "$COMMIT_MSG"
+
+# -----------------------------------------------------------------------------
+# 5. Push to Remote
 # -----------------------------------------------------------------------------
 BRANCH="main"
 REMOTE="origin"
 
 echo "☁️ Pushing to $REMOTE/$BRANCH..."
 
-# Try standard push first (safer)
+# Try standard push first
 if git push "$REMOTE" "$BRANCH"; then
-    echo "✅ Successfully pushed to remote!"
-else
-    echo "⚠️ Standard push failed. Attempting force push (--force-with-lease)..."
-    
-    # Fetch latest state from remote to ensure we don't overwrite someone else's work blindly
-    git fetch "$REMOTE" "$BRANCH" || true
-    
-    # Force push with lease (only overwrites if remote hasn't changed since our last fetch)
-    if git push --force-with-lease "$REMOTE" "$BRANCH"; then
-        echo "✅ Successfully force-pushed to remote!"
-    else
-        echo "❌ Failed to push even with force. Check branch protection settings on GitHub."
-        exit 1
-    fi
-fi
 
-echo "✨ Deployment complete."
