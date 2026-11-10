@@ -3,4 +3,4 @@ set -e
 
 git add .
 git commit -m "Changed readme first paragraph."
-git push --set-upstream origin main   
+git push --set-upstream origin main --force
